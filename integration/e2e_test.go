@@ -79,8 +79,10 @@ type IntegrationTestSuite struct {
 	appPort string
 }
 
-const Price = "0.03uakt"
-const Adjustment = "1.4"
+const (
+	defaultGasPrice      = "0.03uakt"
+	defaultGasAdjustment = "1.4"
+)
 
 type E2EContainerToContainer struct {
 	IntegrationTestSuite
@@ -96,6 +98,16 @@ type E2EDeploymentUpdate struct {
 
 type E2EApp struct {
 	IntegrationTestSuite
+}
+
+func cliGlobalFlags() []string {
+	return []string{
+		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
+		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
+		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
+		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, defaultGasAdjustment),
+		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, defaultGasPrice),
+	}
 }
 
 func (s *IntegrationTestSuite) SetupSuite() {
@@ -134,11 +146,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 		s.validator.Address,
 		s.keyProvider.GetAddress(),
 		sdk.NewCoins(sendTokens),
-		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.network.WaitForNextBlock())
@@ -154,11 +162,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 		s.validator.Address,
 		s.keyTenant.GetAddress(),
 		sdk.NewCoins(sendTokens),
-		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.network.WaitForNextBlock())
@@ -200,11 +204,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 		s.validator.ClientCtx,
 		s.keyProvider.GetAddress(),
 		fmt.Sprintf("%s/%s", s.network.BaseDir, fstat.Name()),
-		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.network.WaitForNextBlock())
@@ -215,11 +215,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 		s.validator.ClientCtx,
 		s.keyTenant.GetAddress(),
 		"localhost",
-		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.network.WaitForNextBlock())
@@ -230,12 +226,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 		s.validator.ClientCtx,
 		s.keyProvider.GetAddress(),
 		"localhost",
-		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.network.WaitForNextBlock())
@@ -400,11 +391,7 @@ func (s *IntegrationTestSuite) closeDeployments() int {
 			keyTenant.GetAddress(),
 			fmt.Sprintf("--owner=%s", createdDep.Groups[0].GroupID.Owner),
 			fmt.Sprintf("--dseq=%v", createdDep.Deployment.DeploymentID.DSeq),
-			fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
-			fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-			fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-			fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-			fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+			cliGlobalFlags()...,
 		)
 		s.Require().NoError(err)
 		s.Require().NoError(s.waitForBlocksCommitted(1))
@@ -505,13 +492,9 @@ func (s *E2EContainerToContainer) TestE2EContainerToContainer() {
 		s.validator.ClientCtx,
 		s.keyTenant.GetAddress(),
 		deploymentPath,
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
 		fmt.Sprintf("--deposit=%s", dtypes.DefaultDeploymentMinDeposit),
 		fmt.Sprintf("--dseq=%v", deploymentID.DSeq),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(7))
@@ -531,12 +514,7 @@ func (s *E2EContainerToContainer) TestE2EContainerToContainer() {
 		s.validator.ClientCtx,
 		bidID,
 		s.keyTenant.GetAddress(),
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(20))).String()),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(2))
@@ -588,12 +566,8 @@ func (s *E2EAppNodePort) TestE2EAppNodePort() {
 		s.validator.ClientCtx,
 		s.keyTenant.GetAddress(),
 		deploymentPath,
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
 		fmt.Sprintf("--dseq=%v", deploymentID.DSeq),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(3))
@@ -612,11 +586,7 @@ func (s *E2EAppNodePort) TestE2EAppNodePort() {
 		s.validator.ClientCtx,
 		bidID,
 		s.keyTenant.GetAddress(),
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(2))
@@ -718,12 +688,8 @@ func (s *E2EDeploymentUpdate) TestE2EDeploymentUpdate() {
 		s.validator.ClientCtx,
 		s.keyTenant.GetAddress(),
 		deploymentPath,
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
 		fmt.Sprintf("--dseq=%v", deploymentID.DSeq),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(3))
@@ -742,11 +708,7 @@ func (s *E2EDeploymentUpdate) TestE2EDeploymentUpdate() {
 		s.validator.ClientCtx,
 		bidID,
 		s.keyTenant.GetAddress(),
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(2))
@@ -790,11 +752,7 @@ func (s *E2EDeploymentUpdate) TestE2EDeploymentUpdate() {
 		deploymentPath,
 		fmt.Sprintf("--owner=%s", lease.GetLeaseID().Owner),
 		fmt.Sprintf("--dseq=%v", did.GetDSeq()),
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(2))
@@ -831,12 +789,8 @@ func (s *E2EApp) TestE2EApp() {
 		s.validator.ClientCtx,
 		s.keyTenant.GetAddress(),
 		deploymentPath,
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
 		fmt.Sprintf("--dseq=%v", deploymentID.DSeq),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.network.WaitForNextBlock())
@@ -905,11 +859,7 @@ func (s *E2EApp) TestE2EApp() {
 		cctxJSON,
 		bidsRes.Bids[0].Bid.BidID,
 		s.keyTenant.GetAddress(),
-		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(6))
@@ -1013,12 +963,8 @@ func (s *E2EDeploymentUpdate) TestE2ELeaseShell() {
 		s.validator.ClientCtx,
 		s.keyTenant.GetAddress(),
 		deploymentPath,
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
 		fmt.Sprintf("--dseq=%v", deploymentID.DSeq),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(3))
@@ -1037,11 +983,7 @@ func (s *E2EDeploymentUpdate) TestE2ELeaseShell() {
 		s.validator.ClientCtx,
 		bidID,
 		s.keyTenant.GetAddress(),
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(2))
@@ -1162,12 +1104,8 @@ func (s *E2EApp) TestE2EMigrateHostname() {
 		s.validator.ClientCtx,
 		s.keyTenant.GetAddress(),
 		deploymentPath,
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
 		fmt.Sprintf("--dseq=%v", deploymentID.DSeq),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.network.WaitForNextBlock())
@@ -1197,11 +1135,7 @@ func (s *E2EApp) TestE2EMigrateHostname() {
 		cctxJSON,
 		bid.BidID,
 		s.keyTenant.GetAddress(),
-		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(6))
@@ -1265,12 +1199,8 @@ func (s *E2EApp) TestE2EMigrateHostname() {
 		s.validator.ClientCtx,
 		s.keyTenant.GetAddress(),
 		deploymentPath,
-		fmt.Sprintf("--%s", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
 		fmt.Sprintf("--dseq=%v", secondDeploymentID.DSeq),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.network.WaitForNextBlock())
@@ -1301,11 +1231,7 @@ func (s *E2EApp) TestE2EMigrateHostname() {
 		cctxJSON,
 		bid.BidID,
 		s.keyTenant.GetAddress(),
-		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(6))
@@ -1382,11 +1308,7 @@ func (s *E2EApp) TestE2EMigrateHostname() {
 		s.keyTenant.GetAddress(),
 		fmt.Sprintf("--owner=%s", deploymentID.GetOwner()),
 		fmt.Sprintf("--dseq=%v", deploymentID.GetDSeq()),
-		fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
-		fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
-		fmt.Sprintf("--gas=%s", flags.GasFlagAuto),
-		fmt.Sprintf("--%s=%s", flags.FlagGasAdjustment, Adjustment),
-		fmt.Sprintf("--%s=%s", flags.FlagGasPrices, Price),
+		cliGlobalFlags()...,
 	)
 	s.Require().NoError(err)
 	s.Require().NoError(s.waitForBlocksCommitted(1))
