@@ -1,0 +1,5 @@
+cd ~/
+
+AKASH_VERSION=v0.15.0-rc14
+
+curl https://raw.githubusercontent.com/ovrclk/akash/master/godownloader.sh | sh -s -- "$AKASH_VERSION
